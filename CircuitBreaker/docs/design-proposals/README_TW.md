@@ -29,15 +29,24 @@ Circuit breaker pattern有三種狀態```closed```, ```open```和```half-open```
 透過狀態的切換來允許執行的動作, 
 - Closed
 ![](curcuit_breaker_Closed.png)
-調用方的請求都能直接去調用; Circuit breaker作為一個代理Proxy, 會負責計算失敗次數.
+調用方的請求都能直接去調用; Circuit breaker作為一個代理Proxy, 會負責一定時間內計算失敗次數.
 
 - Open  
 ![](curcuit_breaker_Open.png)
-調用方的請求會立刻響應錯誤
+調用方的請求會立刻響應錯誤.
+
+> Sleeping window, 這裡的設定是用來給依賴的服務修復的時間用, 以允許調用方再次嘗試調用.
 
 - Half-Open
 ![](curcuit_breaker_HalfOpen.png)
 當circuit breaker處於該狀態下時, 允許級少數的請求, 嘗試去調用, 再根據調用結果決定切換到什麼狀態; 目的就是用來確定所依賴的服務是否恢復可用了.
+
+> Half-open是用來保護依賴服務的, 一個服務正在慢慢恢復時(可能正在暖機建立cache中), 可能能支持的請求量是極其有限的, 要是一堆請求量突然打進去(like 雪崩的發生), 可能又會讓它趴掉了.
+
+# Different from Retry Pattern
+Retry pattern是調用方期望它會調用成功.
+Circuit breaker pattern則是用來防範可能持續失敗的調用.
+兩者是可以相互組合使用的; 但如果breaker已經響應該失敗不是暫時的(像Open), 那就不用再Retry了. 
 
 ## References
 [^1]: [微服務瞎談(5) CAP理論](https://ithelp.ithome.com.tw/articles/10235541)  
