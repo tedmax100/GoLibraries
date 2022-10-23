@@ -2,7 +2,8 @@
 
 ## Context and Problem
 在一個稍微複雜點的系統架構中, 一個服務通常都會有許多的外部依賴項目, 且每個依賴項目都有可能會發生Failure(瘋狂失敗, 短時間內沒有響應, 一直超時, 也可能是網路問題就是).
-這部份能參考```微服務瞎談(5) CAP理論```[^1]
+這網路部份能參考```微服務瞎談(5) CAP理論```[^1]
+本來一個請求幾毫秒內能響應回覆, 現在因為發生了Failure, 而導致響應時間增加到10秒.
 
 最前面的調用方們, 可能當下還感受不到某個依賴項目沒在響應了. 而一直持續的發出請求.
 ![](system_depdencies.png)  
@@ -22,9 +23,21 @@ Michael Nygard在Release It!該書中[^4], 提到了Circuit Breaker Pattern(斷�
 Circuit breaker pattern還能自己檢測故障是否已經排除, 如果故障已經被解決, 則會允許調用方可以調用該操作.
 
 ## FSM
+Circuit breaker算是個proxy, 
 ![](curcuit_breaker_FSM.png)
+Circuit breaker pattern有三種狀態```closed```, ```open```和```half-open```
+透過狀態的切換來允許執行的動作, 
+- Closed
+![](curcuit_breaker_Closed.png)
+調用方的請求都能直接去調用; Circuit breaker作為一個代理Proxy, 會負責計算失敗次數.
 
+- Open  
+![](curcuit_breaker_Open.png)
+調用方的請求會立刻響應錯誤
 
+- Half-Open
+![](curcuit_breaker_HalfOpen.png)
+當circuit breaker處於該狀態下時, 允許級少數的請求, 嘗試去調用, 再根據調用結果決定切換到什麼狀態; 目的就是用來確定所依賴的服務是否恢復可用了.
 
 ## References
 [^1]: [微服務瞎談(5) CAP理論](https://ithelp.ithome.com.tw/articles/10235541)  
